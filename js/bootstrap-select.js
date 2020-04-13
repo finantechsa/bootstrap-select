@@ -1407,15 +1407,23 @@
           // menu should never need to be updated more than once
           if ((init || isVirtual === true) && menuIsDifferent) {
             var menuInner = that.$menuInner[0],
+              hasCustomScrollbar = menuInner.classList.contains('mCustomScrollbar'),
               menuFragment = document.createDocumentFragment(),
-              emptyMenu = menuInner.firstChild.cloneNode(false),
+              emptyMenu,
               marginTop,
               marginBottom,
               elements = that.selectpicker.view.visibleElements,
               toSanitize = [];
 
             // replace the existing UL with an empty one - this is faster than $.empty()
-            menuInner.replaceChild(emptyMenu, menuInner.firstChild);
+            if (hasCustomScrollbar) {
+              emptyMenu = menuInner.firstChild.firstChild.firstChild.cloneNode(false);
+              var scrollContainer = menuInner.firstChild.firstChild;
+              scrollContainer.replaceChild(emptyMenu, scrollContainer.firstChild);
+            } else {
+              emptyMenu = menuInner.firstChild.cloneNode(false);
+              menuInner.replaceChild(emptyMenu, menuInner.firstChild);
+            }
 
             for (var i = 0, visibleElementsLen = elements.length; i < visibleElementsLen; i++) {
               var element = elements[i],
@@ -1446,14 +1454,28 @@
               marginTop = (that.selectpicker.view.position0 === 0 ? 0 : that.selectpicker.current.data[that.selectpicker.view.position0 - 1].position);
               marginBottom = (that.selectpicker.view.position1 > size - 1 ? 0 : that.selectpicker.current.data[size - 1].position - that.selectpicker.current.data[that.selectpicker.view.position1 - 1].position);
 
-              menuInner.firstChild.style.marginTop = marginTop + 'px';
-              menuInner.firstChild.style.marginBottom = marginBottom + 'px';
+              if (hasCustomScrollbar) {
+                menuInner.firstChild.firstChild.firstChild.style.marginTop = marginTop + 'px';
+                menuInner.firstChild.firstChild.firstChild.style.marginBottom = marginBottom + 'px';
+              } else {
+                menuInner.firstChild.style.marginTop = marginTop + 'px';
+                menuInner.firstChild.style.marginBottom = marginBottom + 'px';
+              }
             } else {
-              menuInner.firstChild.style.marginTop = 0;
-              menuInner.firstChild.style.marginBottom = 0;
+              if (hasCustomScrollbar) {
+                menuInner.firstChild.firstChild.firstChild.style.marginTop = 0;
+                menuInner.firstChild.firstChild.firstChild.style.marginBottom = 0;
+              } else {
+                menuInner.firstChild.style.marginTop = 0;
+                menuInner.firstChild.style.marginBottom = 0;
+              }
             }
 
-            menuInner.firstChild.appendChild(menuFragment);
+            if (hasCustomScrollbar) {
+              menuInner.firstChild.firstChild.firstChild.appendChild(menuFragment);
+            } else {
+              menuInner.firstChild.appendChild(menuFragment);
+            }
           }
         }
 
